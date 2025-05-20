@@ -1,0 +1,15 @@
+pyarrow
+isort
+jupyterlab
+matplotlib
+numpy
+pandas
+pip
+pyarrow
+pylint
+scikit-learn
+scipy
+seaborn
+tabulate
+yapf
+plotly
