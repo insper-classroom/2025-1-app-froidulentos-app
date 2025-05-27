@@ -1,27 +1,23 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React from 'react';
+import Header from './components/header/header.jsx';
+import FileUpload from './components/fileUpload/fileUpload.jsx';
+import Footer from './components/footer/footer.jsx';
+import './App.css';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const handleFileUpload = (file) => {
+    console.log('Arquivo recebido:', file);
+  };
 
   return (
-    <>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div className="app-container">
+      <Header />
+      <main className="main-content">
+        <FileUpload onFileUpload={handleFileUpload} />
+      </main>
+      <Footer />
+    </div>
+  );
 }
 
-export default App
+export default App;
