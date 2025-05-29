@@ -1,13 +1,16 @@
 import React, { useState, useRef } from 'react';
-import { Upload, File, CheckCircle, AlertCircle } from 'lucide-react';
+import { Upload, File } from 'lucide-react';
 import './fileUpload.css';
-
+import { useNavigate } from 'react-router-dom';
+import { message, Spin } from 'antd';
 
 const FileUpload = () => {
   const [file, setFile] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const [uploadStatus, setUploadStatus] = useState('idle');
+  const [loading, setLoading] = useState(false);
   const fileInputRef = useRef(null);
+  const navigate = useNavigate();
 
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files[0]) {
@@ -18,9 +21,6 @@ const FileUpload = () => {
   const handleFile = (selectedFile) => {
     setFile(selectedFile);
     setUploadStatus('idle');
-    setTimeout(() => {
-      setUploadStatus(Math.random() > 0.2 ? 'success' : 'error');
-    }, 1500);
   };
 
   const handleDragOver = (e) => {
@@ -54,6 +54,30 @@ const FileUpload = () => {
     }
   };
 
+  const handleAnalyze = async () => {
+    if (!file) return;
+    setLoading(true);
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+        const response = await fetch("http://127.0.0.1:8000/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) throw new Error("Erro ao enviar para o backend");
+
+      const resultData = await response.json();
+      navigate("/resultados", { state: resultData });
+    } catch (error) {
+      console.error(error);
+      message.error("Erro ao analisar os dados.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="file-upload">
       <input 
@@ -83,40 +107,19 @@ const FileUpload = () => {
             <span className="file-name">{file.name}</span>
             <span className="file-size">({(file.size / 1024).toFixed(2)} KB)</span>
           </div>
-          
-          {uploadStatus === 'idle' && (
-            <div className="upload-progress">
-              <div className="progress-bar">
-                <div className="progress-bar-fill"></div>
-              </div>
-              <p>Processando arquivo...</p>
-            </div>
-          )}
-          
-          {uploadStatus === 'success' && (
-            <div className="upload-result success">
-              <CheckCircle size={24} />
-              <p>Arquivo processado com sucesso!</p>
-            </div>
-          )}
-          
-          {uploadStatus === 'error' && (
-            <div className="upload-result error">
-              <AlertCircle size={24} />
-              <p>Erro ao processar o arquivo. Tente novamente.</p>
-            </div>
-          )}
-          
+
           <div className="file-actions">
             <button 
               className="action-button primary"
-              disabled={uploadStatus === 'idle'}
+              disabled={loading}
+              onClick={handleAnalyze}
             >
-              Analisar dados
+              {loading ? <Spin size="small" /> : "Analisar dados"}
             </button>
             <button 
               className="action-button secondary"
               onClick={resetUpload}
+              disabled={loading}
             >
               Cancelar
             </button>

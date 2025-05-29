@@ -1,7 +1,7 @@
 import React from 'react';
 import { ShieldAlert } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import './header.css';
-
 
 const Header = () => {
   return (
@@ -9,7 +9,9 @@ const Header = () => {
       <div className="header-container">
         <div className="logo">
           <img src="/src/assets/logo_mercado_pago.png" alt="Logo Mercado Pago" />
-          <h1>Freudulentos</h1>
+          <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
+            <h1>Freudulentos</h1>
+          </Link>
         </div>
         <nav className="nav">
           <button className="nav-button">Upload</button>
