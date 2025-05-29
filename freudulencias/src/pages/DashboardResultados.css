@@ -1,0 +1,41 @@
+.resultados-container {
+  padding: 32px 24px;
+  max-width: 1000px;
+  margin: 0 auto;
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+}
+
+.resultados-title {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 32px;
+  text-align: center;
+  color: #2d3277; /* azul institucional */
+}
+
+.resultados-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 24px;
+}
+
+.resultados-card {
+  border-radius: 12px;
+  transition: transform 0.2s ease;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.06);
+}
+
+.resultados-card:hover {
+  transform: translateY(-4px);
+}
+
+.ant-statistic-content-value {
+  font-size: 26px;
+  font-weight: bold;
+}
+
+.lucro-verde .ant-statistic-content-value {
+  color: #00A650 !important; /* verde de sucesso */
+}

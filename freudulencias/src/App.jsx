@@ -1,19 +1,19 @@
 import React from 'react';
+import { Routes, Route } from 'react-router-dom';
 import Header from './components/header/header.jsx';
-import FileUpload from './components/fileUpload/fileUpload.jsx';
 import Footer from './components/footer/footer.jsx';
-import './App.css';
+import FileUpload from './components/fileUpload/fileUpload.jsx';
+import DashboardResultados from './pages/DashboardResultados.jsx';
 
 function App() {
-  const handleFileUpload = (file) => {
-    console.log('Arquivo recebido:', file);
-  };
-
   return (
     <div className="app-container">
       <Header />
       <main className="main-content">
-        <FileUpload onFileUpload={handleFileUpload} />
+        <Routes>
+          <Route path="/" element={<FileUpload />} />
+          <Route path="/resultados" element={<DashboardResultados />} />
+        </Routes>
       </main>
       <Footer />
     </div>
