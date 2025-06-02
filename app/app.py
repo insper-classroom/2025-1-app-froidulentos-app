@@ -26,24 +26,11 @@ def get_models():
 @app.route(BASE_URL + "/predict", methods=['GET'])
 def predict():
 
-    model_name = request.args.get('model_name')
-
-    model_path = os.path.join('./models', model_name + '.pkl') # Path to your models directory
-    if not os.path.exists(model_path):
-        app.logger.warning(f"Model file not found: {model_path}")
-        return {"error": f"Model '{model_name}' not found at {model_path}"}, 404
+    model = joblib.load('models/model.pkl') 
     
-    model = joblib.load(model_path) 
-    
-    if 'payers' not in request.files or \
-       'terminals' not in request.files or \
-       'transactions' not in request.files:
-        app.logger.warning("Missing files.")
-        return {"error": "Missing one or more Feather files. Required: 'payers', 'terminals', 'transactions'"}, 400
-
-    payers = pd.read_feather(request.files['payers'])
-    terminals = pd.read_feather(request.files['terminals'])
-    transactions = pd.read_feather(request.files['transactions'])
+    payers = request.args.get('payers')
+    terminals = request.args.get('terminals')
+    transactions = request.args.get('transactions')
 
     processed_df = preprocess(
             new_payers=payers,
@@ -55,11 +42,10 @@ def predict():
     probas = model.predict_proba(processed_df)
 
     return {
-        "model_name": model_name,
+        "model_name": 'model',
         "predictions": predictions.tolist(),
         "probabilities": probas.tolist()
     }, 200
-
 
 @app.route(BASE_URL + "/evaluate", methods=['GET'])
 def evaluate():

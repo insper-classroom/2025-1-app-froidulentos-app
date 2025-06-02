@@ -92,7 +92,7 @@ def process_soft_descriptor(df: pd.DataFrame) -> pd.DataFrame:
     split the soft_descriptor, since the last part is always a number (pegadinha) we take it off the string and keep the rest
     '''
 
-    df['terminal_soft_descriptor'] = df['terminal_soft_descriptor'].apply(lambda x: ' '.join(x.split(' ')[:-1]))
+    df['terminal_soft_descriptor'] = df['terminal_soft_descriptor'].astype(str).apply(lambda x: ' '.join(x.split(' ')[:-1]))
     only_frauds = df[df['is_fraud'] == True]
     total = only_frauds['terminal_soft_descriptor'].value_counts().sum()
     best_descriptors = (only_frauds['terminal_soft_descriptor'].value_counts() / total) * 100
@@ -163,7 +163,7 @@ def funcoes_basicas(df):
 
     # transformando colunas de tempo em ciclicas 
     cyclical_features = CyclicalFeatures(variables=['tx_hour', 'week_day', 'tx_month'],
-                                            drop_original=True)
+                                            drop_original=False)
     df = cyclical_features.fit_transform(df)
 
     return df
@@ -356,7 +356,7 @@ def preprocess(new_payers=None, new_terminals=None, new_transactions=None, subse
 
     payers = extract_data("../data/payers-v1.feather.dvc")
     terminals = extract_data("../data/seller_terminals-v1.feather.dvc")
-    transactions = extract_data(f"../data/transactions_train-v1.feather.dvc")
+    transactions = extract_data("../data/transactions_train-v1.feather.dvc")
 
     print("Concatenating dataframes...")
 
@@ -371,7 +371,7 @@ def preprocess(new_payers=None, new_terminals=None, new_transactions=None, subse
     rel_df = convert_dates(rel_df)
 
     print("Adding features...")
-
+   
     rel_df = add_features(rel_df)
 
     print("Removing duplicates...")
@@ -380,11 +380,11 @@ def preprocess(new_payers=None, new_terminals=None, new_transactions=None, subse
 
     print("Cleaning df")
 
-    clean_df = clean_df(df, rel_df)
+    cleaned_df = clean_df(df, rel_df)
 
     print(f"Preprocessing for subset '{subset}' done.")
 
-    return clean_df
+    return cleaned_df
 
 
 
