@@ -12,8 +12,17 @@ from datetime import datetime
 import reverse_geocoder as rg
 import numpy as np
 from feature_engine.creation import CyclicalFeatures
+import subprocess
 
 SEED = 42  # resposta do universo tiw
+
+
+def extract_data(path: str) -> pd.DataFrame:
+    pull = subprocess.Popen('dvc pull', shell=True)
+    pull.wait()
+
+    df = pd.read_feather(path)
+    return df
 
 
 '''
@@ -83,7 +92,7 @@ def process_soft_descriptor(df: pd.DataFrame) -> pd.DataFrame:
     split the soft_descriptor, since the last part is always a number (pegadinha) we take it off the string and keep the rest
     '''
 
-    df['terminal_soft_descriptor'] = df['terminal_soft_descriptor'].apply(lambda x: ' '.join(x.split(' ')[:-1]))
+    df['terminal_soft_descriptor'] = df['terminal_soft_descriptor'].astype(str).apply(lambda x: ' '.join(x.split(' ')[:-1]))
     only_frauds = df[df['is_fraud'] == True]
     total = only_frauds['terminal_soft_descriptor'].value_counts().sum()
     best_descriptors = (only_frauds['terminal_soft_descriptor'].value_counts() / total) * 100
@@ -154,7 +163,7 @@ def funcoes_basicas(df):
 
     # transformando colunas de tempo em ciclicas 
     cyclical_features = CyclicalFeatures(variables=['tx_hour', 'week_day', 'tx_month'],
-                                            drop_original=True)
+                                            drop_original=False)
     df = cyclical_features.fit_transform(df)
 
     return df
@@ -339,13 +348,15 @@ def clean_df(df, original_df):
 FINALMENTE O NOSSO PREPROCESSAMENTE, uma pipe que junta todas as funcoes para comecarmos a fazer o nosso feature engineering e salvar de vez,
 mas a rúbrica pede um préprocessamento automatico entao vamos ter que salvar duas vezes.... um prepro e um df_completao!
 '''
-def preprocess(new_payers=None, new_terminals=None, new_transactions=None, data_dir="../data/raw", out_dir="../data/processed", subset="test"):
+def preprocess(new_payers=None, new_terminals=None, new_transactions=None, subset="test"):
 
-    print(f"Starting preprocessing for subset: {subset}")
+    print(f"Starting preprocessing for subset: '{subset}'")
 
-    print(f"Reading data from: {data_dir}")
+    print(f"Reading data from")
 
-    payers, terminals, transactions = read_data(data_dir, subset)
+    payers = extract_data("../data/payers-v1.feather.dvc")
+    terminals = extract_data("../data/seller_terminals-v1.feather.dvc")
+    transactions = extract_data("../data/transactions_train-v1.feather.dvc")
 
     print("Concatenating dataframes...")
 
@@ -360,7 +371,7 @@ def preprocess(new_payers=None, new_terminals=None, new_transactions=None, data_
     rel_df = convert_dates(rel_df)
 
     print("Adding features...")
-
+   
     rel_df = add_features(rel_df)
 
     print("Removing duplicates...")
@@ -369,11 +380,11 @@ def preprocess(new_payers=None, new_terminals=None, new_transactions=None, data_
 
     print("Cleaning df")
 
-    clean_df = clean_df(df, rel_df)
+    cleaned_df = clean_df(df, rel_df)
 
     print(f"Preprocessing for subset '{subset}' done.")
 
-    return clean_df
+    return cleaned_df
 
 
 
