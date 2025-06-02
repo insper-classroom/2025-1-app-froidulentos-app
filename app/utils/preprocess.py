@@ -12,8 +12,17 @@ from datetime import datetime
 import reverse_geocoder as rg
 import numpy as np
 from feature_engine.creation import CyclicalFeatures
+import subprocess
 
 SEED = 42  # resposta do universo tiw
+
+
+def extract_data(path: str) -> pd.DataFrame:
+    pull = subprocess.Popen('dvc pull', shell=True)
+    pull.wait()
+
+    df = pd.read_feather(path)
+    return df
 
 
 '''
@@ -339,13 +348,15 @@ def clean_df(df, original_df):
 FINALMENTE O NOSSO PREPROCESSAMENTE, uma pipe que junta todas as funcoes para comecarmos a fazer o nosso feature engineering e salvar de vez,
 mas a rúbrica pede um préprocessamento automatico entao vamos ter que salvar duas vezes.... um prepro e um df_completao!
 '''
-def preprocess(new_payers=None, new_terminals=None, new_transactions=None, data_dir="../data/raw", out_dir="../data/processed", subset="test"):
+def preprocess(new_payers=None, new_terminals=None, new_transactions=None, subset="test"):
 
-    print(f"Starting preprocessing for subset: {subset}")
+    print(f"Starting preprocessing for subset: '{subset}'")
 
-    print(f"Reading data from: {data_dir}")
+    print(f"Reading data from")
 
-    payers, terminals, transactions = read_data(data_dir, subset)
+    payers = extract_data("../data/payers-v1.feather.dvc")
+    terminals = extract_data("../data/seller_terminals-v1.feather.dvc")
+    transactions = extract_data(f"../data/transactions_train-v1.feather.dvc")
 
     print("Concatenating dataframes...")
 

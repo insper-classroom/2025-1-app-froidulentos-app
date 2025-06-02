@@ -32,10 +32,8 @@ def predict():
     if not os.path.exists(model_path):
         app.logger.warning(f"Model file not found: {model_path}")
         return {"error": f"Model '{model_name}' not found at {model_path}"}, 404
-
     
     model = joblib.load(model_path) 
-
     
     if 'payers' not in request.files or \
        'terminals' not in request.files or \
