@@ -2,16 +2,18 @@ from flask import Flask, request
 from flask_cors import CORS
 import os
 import joblib
+import pandas as pd
+from utils.preprocess import preprocess
 
 
-BASE_URL = '/api/v1'
+BASE_URL = '/api/v1/freudulentos'
 
 app = Flask("Fraudulentos API")
 
 CORS(app)
 
 
-@app.route(BASE_URL + '/get_models', methods=['GET'])
+@app.route(BASE_URL + '/models', methods=['GET'])
 def get_models():
     
     model_files = [model for model in os.listdir('../models') if model.endswith('.pkl')]
@@ -20,43 +22,51 @@ def get_models():
     return {'models': model_names}, 200
 
 
-@app.route(BASE_URL + '/add_data', methods=['POST'])
-def add_data():
 
+@app.route(BASE_URL + "/predict", methods=['GET'])
+def predict():
+
+    model_name = request.args.get('model_name')
+
+    model_path = os.path.join('./models', model_name + '.pkl') # Path to your models directory
+    if not os.path.exists(model_path):
+        app.logger.warning(f"Model file not found: {model_path}")
+        return {"error": f"Model '{model_name}' not found at {model_path}"}, 404
+
+    
+    model = joblib.load(model_path) 
+
+    
+    if 'payers' not in request.files or \
+       'terminals' not in request.files or \
+       'transactions' not in request.files:
+        app.logger.warning("Missing files.")
+        return {"error": "Missing one or more Feather files. Required: 'payers', 'terminals', 'transactions'"}, 400
+
+    payers = pd.read_feather(request.files['payers'])
+    terminals = pd.read_feather(request.files['terminals'])
+    transactions = pd.read_feather(request.files['transactions'])
+
+    processed_df = preprocess(
+            new_payers=payers,
+            new_terminals=terminals,
+            new_transactions=transactions
+        )
+    
+    predictions = model.predict(processed_df)
+    probas = model.predict_proba(processed_df)
+
+    return {
+        "model_name": model_name,
+        "predictions": predictions.tolist(),
+        "probabilities": probas.tolist()
+    }, 200
+
+
+@app.route(BASE_URL + "/evaluate", methods=['GET'])
+def evaluate():
     pass
 
-
-@app.route(BASE_URL + '/run_model', methods=['POST'])
-def run_model():
-    
-    try:
-        data = request.get_json()
-        model_name = data.get('model_name')
-
-        if not model_name:
-            return {'error': 'Model name is required'}, 400
-
-        model_path = f'../models/{model_name}.pkl'
-        
-        if not os.path.exists(model_path):
-            return {'error': 'Model not found'}, 404
-
-        model = joblib.load(model_path)
-        y = model.predict("dataset")
-        
-        return {
-                'model_name': model_name,
-                'profit': 1,  
-                'accuracy': 0.1,  
-                'precision': 0.1,
-                'recall': 0.1,
-                'f1_score': 0.1,
-                'y': y.tolist()
-        }, 200
-
-    except Exception as e:
-        return {'error': str(e)}, 500
-    
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=8080)
