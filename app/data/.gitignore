@@ -1,3 +1,7 @@
 /payers-v1.feather
 /seller_terminals-v1.feather
-/transactions_train-v1.feather
+/tx_all-v1.feather
+/tx_test-v1.feather
+/tx_train-v1.feather
+/tx_val-v1.feather
+/tx_train_val-v1.feather
