@@ -1,0 +1,4 @@
+[core]
+    remote = freudulentosapp
+['remote "freudulentosapp"']
+    url = s3://bucketstartup-02/app

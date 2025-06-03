@@ -26,23 +26,45 @@ def get_models():
 @app.route(BASE_URL + "/predict", methods=['GET'])
 def predict():
 
-    model = joblib.load('models/model.pkl') 
+    data = request.get_json()
     
-    payers = request.args.get('payers')
-    terminals = request.args.get('terminals')
-    transactions = request.args.get('transactions')
-
-    processed_df = preprocess(
-            new_payers=payers,
-            new_terminals=terminals,
-            new_transactions=transactions
-        )
+    model_name = data['model_name']
+    if not model_name:
+        return {"error": "Model name is required"}, 400
     
-    predictions = model.predict(processed_df)
-    probas = model.predict_proba(processed_df)
+    try:
+        model = joblib.load('models/' + model_name + '.pkl')     
+    except Exception as e:
+        return {"error": f"Failed to load model: {str(e)}"}, 500
 
+    if "payers" not in data or \
+       "terminals" not in data or \
+       "transactions" not in data:
+        
+        return {"error": "Missing required data fields: payers, terminals, transactions"}, 400
+    
+    payers = pd.read_feather(data['payers'])
+    terminals = pd.read_feather(data['terminals'])
+    transactions = pd.read_feather(data['transactions'])
+
+    try:
+        processed_df = preprocess(
+                new_payers=payers,
+                new_terminals=terminals,
+                new_transactions=transactions
+            )
+    except Exception as e:
+        return {"error": f"Data preprocessing failed: {str(e)}"}, 500
+    
+    try:
+        predictions = model.predict(processed_df)
+        probas = model.predict_proba(processed_df)
+        
+    except Exception as e:
+        return {"error": f"Model prediction failed: {str(e)}"}, 500
+    
     return {
-        "model_name": 'model',
+        "model_name": model_name,
         "predictions": predictions.tolist(),
         "probabilities": probas.tolist()
     }, 200
