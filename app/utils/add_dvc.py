@@ -4,6 +4,7 @@ from pathlib import Path
 import pandas as pd
 
 def add_to_dvc(filename):
+    print("Adding file to DVC...")
     # join folder_path with filepath
     filepath = os.path.join('data/predictions', filename)
     subprocess.run(["dvc", "add", filepath], check=True)
@@ -19,7 +20,7 @@ def add_to_dvc(filename):
 
 def save_data(transactions, y_pred, y_proba, model_name):
 
-
+    print("Saving predictions...")
     date = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
     processed_file_path = "data/predictions/" + f"{model_name}_pred_proba_{date}.feather"
