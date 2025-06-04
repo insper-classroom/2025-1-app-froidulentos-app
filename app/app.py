@@ -29,9 +29,9 @@ def get_models():
 @app.route(BASE_URL + "/predict", methods=['POST'])
 def predict():
 
-    data = request.get_json()
     
-    model_name = data['model_name']
+    
+    model_name = request.form.get('model_name')
     if not model_name:
         return {"error": "Model name is required"}, 400
     
@@ -40,15 +40,15 @@ def predict():
     except Exception as e:
         return {"error": f"Failed to load model: {str(e)}"}, 500
 
-    if "payers" not in data or \
-       "terminals" not in data or \
-       "transactions" not in data:
+    if "payers" not in request.files or \
+       "terminals" not in request.files or \
+       "transactions" not in request.files:
         
-        return {"error": "Missing required data fields: payers, terminals, transactions"}, 400
+        return {"error": f"Missing required data fields: payers, terminals, transactions"}, 400
     
-    payers = pd.read_feather(data['payers'])
-    terminals = pd.read_feather(data['terminals'])
-    transactions = pd.read_feather(data['transactions'])
+    payers = pd.read_feather(request.files.get('payers'))
+    terminals = pd.read_feather(request.files.get('terminals'))
+    transactions = pd.read_feather(request.files.get('transactions'))
 
     try:
         processed_df = preprocess(
