@@ -63,7 +63,7 @@ def predict():
         predictions = model.predict(processed_df)
         probas = model.predict_proba(processed_df)
 
-        model_path = save_data(predictions, probas, model_name)
+        model_path = save_data(transactions, predictions, probas, model_name)
         add_to_dvc(model_path)
         
     except Exception as e:
@@ -71,6 +71,7 @@ def predict():
     
     return {
         "model_name": model_name,
+        "trasaction_id": transactions['transaction_id'].tolist(),
         "predictions": predictions.tolist(),
         "probabilities": probas.tolist()
     }, 200

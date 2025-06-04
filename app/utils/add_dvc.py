@@ -17,7 +17,7 @@ def add_to_dvc(filename):
     subprocess.run(["dvc", "push"], check=True)
 
 
-def save_data(y_pred, y_proba, model_name):
+def save_data(transactions, y_pred, y_proba, model_name):
     output_path = Path('../data/predictions')
     output_path.mkdir(parents=True, exist_ok=True)
 
@@ -28,8 +28,9 @@ def save_data(y_pred, y_proba, model_name):
     df = pd.DataFrame()
     df.attrs['model_name'] = model_name
     df.attrs['created_at'] = date
-    df["predictions"] = y_pred
-    df["pred_proba"] = y_proba
+    df["tx_id"] = transactions["transaction_id"]
+    df["pred"] = y_pred
+    df["proba"] = y_proba
     df.to_feather(processed_file_path)
 
     print(f"Saved predictions for model '{model_name}' to {processed_file_path}")
