@@ -1,4 +1,6 @@
-### File Descriptions:
+# Freudulentos Fraud Detection App
+
+## Back-end:
 
 * **`app.py`**:
     * This is the main entry point for the Flask API.
