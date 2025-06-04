@@ -5,7 +5,7 @@ import pandas as pd
 
 def add_to_dvc(filename):
     # join folder_path with filepath
-    filepath = os.path.join('../data/predictions', filename)
+    filepath = os.path.join('data/predictions', filename)
     subprocess.run(["dvc", "add", filepath], check=True)
 
     # --- Step 3: Git Add the .dvc file (not the data itself) ---
@@ -18,12 +18,11 @@ def add_to_dvc(filename):
 
 
 def save_data(transactions, y_pred, y_proba, model_name):
-    output_path = Path('../data/predictions')
-    output_path.mkdir(parents=True, exist_ok=True)
 
-    date = datetime.now()
 
-    processed_file_path = os.path.join(output_path, f"{model_name}_pred_proba_{date}.feather")
+    date = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
+    processed_file_path = "data/predictions/" + f"{model_name}_pred_proba_{date}.feather"
 
     df = pd.DataFrame()
     df.attrs['model_name'] = model_name
