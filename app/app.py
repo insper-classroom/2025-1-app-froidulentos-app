@@ -16,11 +16,13 @@ CORS(app)
 
 @app.route(BASE_URL + '/models', methods=['GET'])
 def get_models():
-    
-    model_files = [model for model in os.listdir('/models') if model.endswith('.pkl')]
-    model_names = [model.split('.')[0] for model in model_files]
-    
-    return {'models': model_names}, 200
+    try:
+        model_files = [model for model in os.listdir('models') if model.endswith('.pkl')]
+        model_names = [model.split('.')[0] for model in model_files]
+        
+        return {'models': model_names}, 200
+    except Exception as e:
+        return {"error": f"Failed to retrieve models: {str(e)}"}, 500
 
 
 
@@ -80,7 +82,7 @@ def predict():
 @app.route(BASE_URL + '/get_predictions', methods=['GET'])
 def get_predictions():
     
-    model_files = [model for model in os.listdir('/data/predictions') if model.endswith('.feather')]
+    model_files = [model for model in os.listdir('data/predictions') if model.endswith('.feather')]
     model_names = [model.split('.')[0] for model in model_files]
     
     return {'model_predictions': model_names}, 200

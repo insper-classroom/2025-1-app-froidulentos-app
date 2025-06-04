@@ -21,7 +21,7 @@ def save_data(y_pred, y_proba, model_name):
     output_path = Path('../data/predictions')
     output_path.mkdir(parents=True, exist_ok=True)
 
-    date = datetime.now().strftime('%Y_%m_%d')
+    date = datetime.now()
 
     processed_file_path = os.path.join(output_path, f"{model_name}_pred_proba_{date}.feather")
 
