@@ -68,19 +68,14 @@ def predict():
     except Exception as e:
         return {"error": f"Model prediction failed: {str(e)}"}, 500
     
-    return {
-        "model_name": model_name,
-        "tx_id": transactions['transaction_id'].tolist(),
-        "predictions": predictions.tolist(),
-        "probabilities": probas
-    }, 200
+    return "Predictions saved successfully", 200
 
 
 
 
 
-@app.route(BASE_URL + '/get_predictions', methods=['GET'])
-def get_predictions():
+@app.route(BASE_URL + '/model_predictions', methods=['GET'])
+def model_predictions():
     
     model_files = [model for model in os.listdir('data/predictions') if model.endswith('.feather')]
     model_names = [model.split('.')[0] for model in model_files]
@@ -88,6 +83,33 @@ def get_predictions():
     return {'model_predictions': model_names}, 200
 
 
+
+@app.route(BASE_URL + '/model_predictions/<model_name>', methods=['GET'])
+def get_model_prediction(model_name):
+    try:
+        predictions = pd.read_feather(f'data/predictions/{model_name}.feather')
+        if predictions.empty:
+            return {"error": "No predictions found for the specified model"}, 404
+        
+        page = request.args.get('page', 1, type=int)
+        page_size = request.args.get('page_size', 100, type=int)
+        print(predictions.attrs)
+
+        start = (page - 1) * page_size
+        end = start + page_size
+
+        paginated_predictions = predictions.iloc[start:end]
+        return {
+        "model_name": predictions.attrs.get('model_name', model_name),
+        "created_at": predictions.attrs.get('created_at', 'Unknown'),
+        "total_predictions": len(predictions),
+        "tx_id": paginated_predictions['tx_id'].tolist(),
+        "predictions": paginated_predictions['pred'].tolist(),
+        "probabilities": paginated_predictions['proba'].tolist()
+    }, 200
+
+    except Exception as e:
+        return {"error": f"Failed to retrieve model predictions: {str(e)}"}, 500
 
 
 @app.route(BASE_URL + "/evaluate", methods=['POST'])
