@@ -5,6 +5,7 @@ import joblib
 import pandas as pd
 from utils.preprocess import preprocess
 from utils.add_dvc import add_to_dvc, save_data
+from utils.run_model import run_model
 
 
 BASE_URL = '/api/v1/freudulentos'
@@ -29,9 +30,7 @@ def get_models():
 @app.route(BASE_URL + "/predict", methods=['POST'])
 def predict():
 
-    data = request.get_json()
-    
-    model_name = data['model_name']
+    model_name = request.form.get('model_name')
     if not model_name:
         return {"error": "Model name is required"}, 400
     
@@ -40,18 +39,18 @@ def predict():
     except Exception as e:
         return {"error": f"Failed to load model: {str(e)}"}, 500
 
-    if "payers" not in data or \
-       "terminals" not in data or \
-       "transactions" not in data:
+    if "payers" not in request.files or \
+       "terminals" not in request.files or \
+       "transactions" not in request.files:
         
-        return {"error": "Missing required data fields: payers, terminals, transactions"}, 400
+        return {"error": f"Missing required data fields: payers, terminals, transactions"}, 400
     
-    payers = pd.read_feather(data['payers'])
-    terminals = pd.read_feather(data['terminals'])
-    transactions = pd.read_feather(data['transactions'])
+    payers = pd.read_feather(request.files.get('payers'))
+    terminals = pd.read_feather(request.files.get('terminals'))
+    transactions = pd.read_feather(request.files.get('transactions'))
 
     try:
-        processed_df = preprocess(
+        X = preprocess(
                 new_payers=payers,
                 new_terminals=terminals,
                 new_transactions=transactions
@@ -60,19 +59,20 @@ def predict():
         return {"error": f"Data preprocessing failed: {str(e)}"}, 500
     
     try:
-        predictions = model.predict(processed_df)
-        probas = model.predict_proba(processed_df)
+        predictions, probas = run_model(model, X) 
 
-        model_path = save_data(predictions, probas, model_name)
+        model_path = save_data(transactions, predictions, probas, model_name)
         add_to_dvc(model_path)
         
+
     except Exception as e:
         return {"error": f"Model prediction failed: {str(e)}"}, 500
     
     return {
         "model_name": model_name,
+        "tx_id": transactions['transaction_id'].tolist(),
         "predictions": predictions.tolist(),
-        "probabilities": probas.tolist()
+        "probabilities": probas
     }, 200
 
 
@@ -95,16 +95,16 @@ def evaluate():
     # TODO   
     return 0
 
-    data = request.get_json()
 
-    model_predictions = data.get('model_predictions')
-    if not model_predictions:
-        return {"error": "Model prediction is required"}, 400
+    if not 'model_predictions' in request.files:
+        return {"error": "Model predictions file is required"}, 400
+        
+    model_predictions = request.files.get('model_predictions')
 
-    if 'y_true' not in data:
+    if 'y_true' not in request.files:
         return {"error": "True labels (y_true) are required for evaluation"}, 400
     
-    y_true = data['y_true']
+    y_true = request.files.get('y_true')
 
 
 
