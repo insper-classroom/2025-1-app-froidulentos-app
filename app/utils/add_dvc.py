@@ -1,0 +1,36 @@
+import subprocess, os
+from datetime import datetime
+from pathlib import Path
+import pandas as pd
+
+def add_to_dvc(filename):
+    # join folder_path with filepath
+    filepath = os.path.join('../data/predictions', filename)
+    subprocess.run(["dvc", "add", filepath], check=True)
+
+    # --- Step 3: Git Add the .dvc file (not the data itself) ---
+    dvc_file = filepath + ".dvc"
+    subprocess.run(["git", "add", dvc_file], check=True)
+    subprocess.run(["git", "commit", "-m", f"Add processed data {filepath}"], check=True)
+
+    # --- Step 4: Push to remote S3 via DVC ---
+    subprocess.run(["dvc", "push"], check=True)
+
+
+def save_data(y_pred, y_proba, model_name):
+    output_path = Path('../data/predictions')
+    output_path.mkdir(parents=True, exist_ok=True)
+
+    date = datetime.now().strftime('%Y_%m_%d')
+
+    processed_file_path = os.path.join(output_path, f"{model_name}_pred_proba_{date}.feather")
+
+    df = pd.DataFrame()
+    df.attrs['model_name'] = model_name
+    df.attrs['created_at'] = date
+    df["predictions"] = y_pred
+    df["pred_proba"] = y_proba
+    df.to_feather(processed_file_path)
+
+    print(f"Saved predictions for model '{model_name}' to {processed_file_path}")
+    return f"{model_name}_pred_proba_{date}.feather"

@@ -4,6 +4,7 @@ import os
 import joblib
 import pandas as pd
 from utils.preprocess import preprocess
+from utils.add_dvc import add_to_dvc, save_data
 
 
 BASE_URL = '/api/v1/freudulentos'
@@ -16,14 +17,14 @@ CORS(app)
 @app.route(BASE_URL + '/models', methods=['GET'])
 def get_models():
     
-    model_files = [model for model in os.listdir('../models') if model.endswith('.pkl')]
-    model_names = [os.path.splitext(model)[0] for model in model_files]
+    model_files = [model for model in os.listdir('/models') if model.endswith('.pkl')]
+    model_names = [model.split('.')[0] for model in model_files]
     
     return {'models': model_names}, 200
 
 
 
-@app.route(BASE_URL + "/predict", methods=['GET'])
+@app.route(BASE_URL + "/predict", methods=['POST'])
 def predict():
 
     data = request.get_json()
@@ -59,6 +60,9 @@ def predict():
     try:
         predictions = model.predict(processed_df)
         probas = model.predict_proba(processed_df)
+
+        model_path = save_data(predictions, probas, model_name)
+        add_to_dvc(model_path)
         
     except Exception as e:
         return {"error": f"Model prediction failed: {str(e)}"}, 500
@@ -69,9 +73,37 @@ def predict():
         "probabilities": probas.tolist()
     }, 200
 
-@app.route(BASE_URL + "/evaluate", methods=['GET'])
+
+
+
+
+@app.route(BASE_URL + '/get_predictions', methods=['GET'])
+def get_predictions():
+    
+    model_files = [model for model in os.listdir('/data/predictions') if model.endswith('.feather')]
+    model_names = [model.split('.')[0] for model in model_files]
+    
+    return {'model_predictions': model_names}, 200
+
+
+
+
+@app.route(BASE_URL + "/evaluate", methods=['POST'])
 def evaluate():
-    pass
+    # TODO   
+    return 0
+
+    data = request.get_json()
+
+    model_predictions = data.get('model_predictions')
+    if not model_predictions:
+        return {"error": "Model prediction is required"}, 400
+
+    if 'y_true' not in data:
+        return {"error": "True labels (y_true) are required for evaluation"}, 400
+    
+    y_true = data['y_true']
+
 
 
 if __name__ == '__main__':
