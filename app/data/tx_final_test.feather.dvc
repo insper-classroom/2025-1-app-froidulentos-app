@@ -1,5 +1,5 @@
 outs:
-- md5: 3d22d2deec5a6b8e02f5f523f945f344
-  size: 33271834
+- md5: 97cc1c478d3e19672692a85087ab6d3b
+  size: 110
   hash: md5
   path: tx_final_test.feather
