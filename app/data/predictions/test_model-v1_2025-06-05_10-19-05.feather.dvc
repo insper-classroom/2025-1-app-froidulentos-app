@@ -1,0 +1,5 @@
+outs:
+- md5: 17c8d3859e8931cc6ffbfa04721bd740
+  size: 20463346
+  hash: md5
+  path: test_model-v1_2025-06-05_10-19-05.feather
