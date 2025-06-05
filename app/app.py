@@ -101,13 +101,12 @@ def get_model_prediction(model_name):
 
         paginated_predictions = predictions.iloc[start:end]
         return {
-            "model_name": predictions.attrs.get('model_name', model_name),
-            "created_at": predictions.attrs.get('created_at', 'Unknown'),
-            "total_predictions": len(predictions),
-            "tx_id": paginated_predictions['tx_id'].tolist(),
-            "predictions": paginated_predictions['pred'].tolist(),
-            "probabilities": paginated_predictions['proba'].tolist()
-        }, 200
+        "model_name": model_name,
+        "total_predictions": len(predictions),
+        "tx_id": paginated_predictions['tx_id'].tolist(),
+        "predictions": paginated_predictions['pred'].tolist(),
+        "probabilities": paginated_predictions['proba'].tolist()
+    }, 200
 
     except Exception as e:
         return {
