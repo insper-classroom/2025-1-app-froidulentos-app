@@ -348,16 +348,15 @@ def clean_df(df, original_df):
 FINALMENTE O NOSSO PREPROCESSAMENTE, uma pipe que junta todas as funcoes para comecarmos a fazer o nosso feature engineering e salvar de vez,
 mas a rúbrica pede um préprocessamento automatico entao vamos ter que salvar duas vezes.... um prepro e um df_completao!
 '''
-def preprocess(new_payers=None, new_terminals=None, new_transactions=None, subset="test"):
+def preprocess(new_payers, new_terminals, new_transactions):
 
-    print(f"Starting preprocessing for subset: '{subset}'")
+    print(f"Starting preprocessing")
 
-    print(f"Reading data from")
 
     payers = pd.read_feather("data/payers-v1.feather")
     terminals = pd.read_feather("data/seller_terminals-v1.feather")
-    transactions = pd.read_feather("data/tx_train-v1.feather")
-
+    transactions = pd.read_feather("data/tx_all-v1.feather")
+    
     print("Concatenating dataframes...")
 
     past_df = concat_df(payers, terminals, transactions)
@@ -382,7 +381,7 @@ def preprocess(new_payers=None, new_terminals=None, new_transactions=None, subse
 
     cleaned_df = clean_df(df, rel_df)
 
-    print(f"Preprocessing for subset '{subset}' done.")
+    print(f"Preprocessing done.")
 
     return cleaned_df
 

@@ -18,18 +18,20 @@ def add_to_dvc(filename):
     subprocess.run(["dvc", "push"], check=True)
 
 
-def save_data(transactions, y_pred, y_proba, model_name):
-
+def save_data(transactions, y_pred, y_proba, model_name, test_df_name=None):
+    
     print("Saving predictions...")
     date = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
-    processed_file_path = "data/predictions/" + f"{model_name}_pred_proba_{date}.feather"
+    processed_file_path = "data/predictions/" + f"{model_name}_{date}.feather"
 
     df = pd.DataFrame()
     df["tx_id"] = transactions["transaction_id"]
     df["pred"] = y_pred
+    df["y_true"] = transactions["is_fraud"]
     df["proba"] = y_proba
+    df['test_df_name'] = test_df_name if test_df_name else 'N/A'
     df.to_feather(processed_file_path)
 
     print(f"Saved predictions for model '{model_name}' to {processed_file_path}")
-    return f"{model_name}_pred_proba_{date}.feather"
+    return f"{model_name}_{date}.feather"
