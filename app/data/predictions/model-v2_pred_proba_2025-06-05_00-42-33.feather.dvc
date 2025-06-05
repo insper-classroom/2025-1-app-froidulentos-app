@@ -1,0 +1,5 @@
+outs:
+- md5: 5fc9f59dab5f7209c32f60e8c8c492fc
+  size: 13784074
+  hash: md5
+  path: model-v2_pred_proba_2025-06-05_00-42-33.feather
