@@ -355,7 +355,7 @@ def preprocess(new_payers, new_terminals, new_transactions):
 
     payers = pd.read_feather("data/payers-v1.feather")
     terminals = pd.read_feather("data/seller_terminals-v1.feather")
-    transactions = pd.read_feather("data/tx_all-v1.feather")
+    transactions = pd.read_feather("data/tx_train-v1.feather")
     
     print("Concatenating dataframes...")
 
